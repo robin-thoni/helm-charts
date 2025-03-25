@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - working-directory: ./src
+      - working-directory: ./charts
         run: |
           set -x
           set -e
