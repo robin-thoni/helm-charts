@@ -6,7 +6,7 @@ on:
     branches:
       - 'main'
     paths:
-      - 'src/**'
+      - 'charts/**'
 
 jobs:
   publish:
