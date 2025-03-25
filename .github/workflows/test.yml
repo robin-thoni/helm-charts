@@ -1,0 +1,28 @@
+name: "Tests"
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    name: Validate Helm charts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - working-directory: ./src
+        run: |
+          set -x
+          set -e
+          set -o pipefail
+
+          for chart in */Chart.yaml
+          do
+            helm lint $(dirname $chart)
+            helm template $(dirname $chart)
+          done
