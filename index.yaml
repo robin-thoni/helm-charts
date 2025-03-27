@@ -11,4 +11,15 @@ entries:
     urls:
     - https://github.com/robin-thoni/helm-charts/releases/download/dummy-0.1.4/dummy-0.1.4.tgz
     version: 0.1.4
-generated: "2025-03-25T16:16:33.578814559Z"
+  saltstack-server:
+  - apiVersion: v2
+    appVersion: "3006.4"
+    created: "2025-03-27T21:52:53.068999625Z"
+    description: A Helm chart for Saltstack server
+    digest: 77a3683e6bc8aafd04f34b454e359d0b276ca778a18ab406e4ff4071be709b03
+    name: saltstack-server
+    type: application
+    urls:
+    - https://github.com/robin-thoni/helm-charts/releases/download/saltstack-server-0.0.1/saltstack-server-0.0.1.tgz
+    version: 0.0.1
+generated: "2025-03-27T21:52:53.069005546Z"
