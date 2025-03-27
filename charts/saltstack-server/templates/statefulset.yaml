@@ -1,0 +1,197 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "saltstack-server.fullname" . }}
+  labels:
+    {{- include "saltstack-server.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "saltstack-server.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "saltstack-server.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "saltstack-server.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      initContainers:
+      {{- with .Values.gitSync }}
+      {{- if .enabled }}
+        - name: git-sync
+          {{- with .podSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: {{ printf "%s:%s" .image.repository .image.tag | quote }}
+          imagePullPolicy: {{ .image.pullPolicy | quote }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -x
+              set -e
+
+              if [ -e /git/.cache/git/credential/socket ]
+              then
+                chmod 700 /git/.cache/git/credential/
+                chmod 600 /git/.cache/git/credential/socket
+              fi
+
+              git-sync --http-bind=0.0.0.0:8080
+          restartPolicy: Always
+          startupProbe:
+            httpGet:
+              port: 8080
+              path: /
+          livenessProbe:
+            httpGet:
+              port: 8080
+              path: /
+          env:
+            - name: GITSYNC_REPO
+              value: {{ .repo | quote }}
+            - name: GITSYNC_REF
+              value: {{ .ref | quote }}
+            - name: GITSYNC_PERIOD
+              value: {{ .period | quote }}
+            - name: GITSYNC_LINK
+              value: stable
+            {{ range $env := .env }}
+            - {{ $env | toYaml | nindent 14 }}
+            {{ end }}
+          envFrom:
+            {{- toYaml .envFrom | nindent 12 }}
+          volumeMounts:
+            - name: git-sync
+              mountPath: /git
+      {{- end }}
+      {{- end }}
+      containers:
+        - name: salt-master
+          {{- with .Values.saltMaster.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: "{{ .Values.saltMaster.image.repository }}:{{ .Values.saltMaster.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.saltMaster.image.pullPolicy }}
+          command:
+            - /bin/sh
+            - -c
+            - salt-master
+          ports:
+            - name: publish
+              containerPort: {{ .Values.services.master.ports.publish.containerPort }}
+              protocol: TCP
+            - name: return
+              containerPort: {{ .Values.services.master.ports.return.containerPort }}
+              protocol: TCP
+            - name: http
+              containerPort: {{ .Values.services.rest.ports.http.containerPort }}
+              protocol: TCP
+          volumeMounts:
+            - name: pki
+              mountPath: /etc/salt/pki
+            {{- if .Values.gitSync.enabled }}
+            - name: git-sync
+              mountPath: /git-sync
+            {{- end }}
+            - name: config-master
+              mountPath: /etc/salt/master
+              subPath: master
+            - name: config-master
+              mountPath: /etc/salt/master.d/
+            - name: tmp
+              mountPath: /tmp
+              subPath: tmp
+            - name: tmp
+              mountPath: /var/log/salt
+              subPath: var/log/salt
+            - name: tmp
+              mountPath: /var/cache/salt/master
+              subPath: var/cache/salt/master
+            - name: tmp
+              mountPath: /var/run/salt/master
+              subPath: var/run/salt/master
+          {{- with .Values.saltMaster.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.saltMaster.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.saltMaster.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.saltMaster.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.saltMaster.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: config-master
+          configMap:
+            name: {{ include "saltstack-server.fullname" . }}-master
+        - name: tmp
+          emptyDir: {}
+      {{- with .Values.volumes }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  volumeClaimTemplates:
+    - metadata:
+        name: pki
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        {{- with .Values.storageClassName }}
+        storageClassName: {{ . | quote }}
+        {{- end }}
+        resources:
+          requests:
+            storage: 100M
+{{- if .Values.gitSync.enabled }}
+    - metadata:
+        name: git-sync
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        {{- with .Values.storageClassName }}
+        storageClassName: {{ . | quote }}
+        {{- end }}
+        resources:
+          requests:
+            storage: 1G
+{{- end }}

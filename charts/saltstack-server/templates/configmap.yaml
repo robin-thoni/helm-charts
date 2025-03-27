@@ -1,0 +1,184 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "saltstack-server.fullname" . }}-master
+data:
+{{- with .Values.saltMaster.conf.master }}
+  master: |
+{{- if kindIs "string" . }}
+    {{- . | nindent 4 }}
+{{- else }}
+    ##### Primary configuration settings #####
+    ##########################################
+    # This configuration file is used to manage the behavior of the Salt Master.
+    # Values that are commented out but have an empty line after the comment are
+    # defaults that do not need to be set in the config. If there is no blank line
+    # after the comment then the value is presented as an example and is not the
+    # default.
+
+    # The master will automatically include all config files from:
+    default_include: /etc/salt/master.d/*.conf
+{{- end }}
+{{- end }}
+
+{{- with .Values.saltMaster.conf.basic }}
+  basic.conf: |
+{{- if kindIs "string" . }}
+    {{- . | nindent 4 }}
+{{- else }}
+    # The tcp port used by the publisher:
+    publish_port: {{ $.Values.services.master.ports.publish.containerPort }}
+
+    # The port used by the communication interface. The ret (return) port is the
+    # interface used for the file server, authentication, job returns, etc.
+    ret_port: {{ $.Values.services.master.ports.return.containerPort }}
+
+    # The user under which the salt master will run.
+    user: salt
+
+    # Directory used to store public key data:
+    pki_dir: /etc/salt/pki
+
+    # Directory to store job and cache data:
+    # This directory may contain sensitive data and should be protected accordingly.
+    cachedir: /var/cache/salt/master
+{{- end }}
+{{- end }}
+
+{{- with .Values.saltMaster.conf.logs }}
+  logs.conf: |
+{{- if kindIs "string" . }}
+    {{- . | nindent 4 }}
+{{- else }}
+    #####     Salt-SSH Configuration     #####
+    ##########################################
+    # The log file of the salt-ssh command:
+    ssh_log_file: /var/log/salt/ssh
+
+
+    #####          Syndic settings       #####
+    ##########################################
+    # The Salt syndic is used to pass commands through a master from a higher
+    # master. Using the syndic is simple. If this is a master that will have
+    # syndic servers(s) below it, then set the "order_masters" setting to True.
+    #
+    # If this is a master that will be running a syndic daemon for passthrough, then
+    # the "syndic_master" setting needs to be set to the location of the master server
+    # to receive commands from.
+
+    # The log file of the salt-syndic daemon:
+    syndic_log_file: /var/log/salt/syndic
+
+
+    #####         Logging settings       #####
+    ##########################################
+    # The location of the master log file
+    log_file: /var/log/salt/master.log
+    key_logfile: /var/log/salt/key.log
+
+    # The level of messages to send to the console.
+    # One of 'garbage', 'trace', 'debug', info', 'warning', 'error', 'critical'.
+    #
+    # The following log levels are considered INSECURE and may log sensitive data:
+    # ['garbage', 'trace', 'debug']
+    #
+    log_level: warning
+
+    # The level of messages to send to the log file.
+    # One of 'garbage', 'trace', 'debug', info', 'warning', 'error', 'critical'.
+    # If using 'log_granular_levels' this must be set to the highest desired level.
+    log_level_logfile: warning
+{{- end }}
+{{- end }}
+
+{{- with .Values.saltMaster.conf.dirs }}
+  dirs.conf: |
+{{- if kindIs "string" . }}
+    {{- . | nindent 4 }}
+{{- else }}
+    #####      File Server settings      #####
+    ##########################################
+    # Salt runs a lightweight file server written in zeromq to deliver files to
+    # minions. This file server is built into the master daemon and does not
+    # require a dedicated port.
+
+    # The file server works on environments passed to the master, each environment
+    # can have multiple root directories, the subdirectories in the multiple file
+    # roots cannot match, otherwise the downloaded files will not be able to be
+    # reliably ensured. A base environment is required to house the top file.
+    file_roots:
+      base:
+        - /git-sync/stable/roots/base/file_roots
+
+
+    #####         Pillar settings        #####
+    ##########################################
+    # Salt Pillars allow for the building of global data that can be made selectively
+    # available to different minions based on minion grain filtering. The Salt
+    # Pillar is laid out in the same fashion as the file server, with environments,
+    # a top file and sls files. However, pillar data does not need to be in the
+    # highstate format, and is generally just key/value pairs.
+    pillar_roots:
+      base:
+        - /git-sync/stable/roots/base/pillar_roots
+
+
+    # Directory for custom modules. This directory can contain subdirectories for
+    # each of Salt's module types such as "runners", "output", "wheel", "modules",
+    # "states", "returners", "engines", "utils", etc.
+    extension_modules: /git-sync/stable/extmods
+{{- end }}
+{{- end }}
+
+{{- with .Values.saltMaster.conf.perf }}
+  perf.conf: |
+{{- if kindIs "string" . }}
+    {{- . | nindent 4 }}
+{{- else }}
+    ######        Reactor Settings        #####
+    ###########################################
+    # Configure the number of workers for the runner/wheel in the reactor.
+    reactor_worker_threads: 10
+
+
+    #####  Large-scale tuning settings   #####
+    ##########################################
+    # The number of worker threads to start. These threads are used to manage
+    # return calls made from minions to the master. If the master seems to be
+    # running slowly, increase the number of threads. This setting can not be
+    # set lower than 3.
+    worker_threads: 5
+{{- end }}
+{{- end }}
+
+{{- with .Values.saltMaster.conf.certs }}
+  certs.conf: |
+{{- if kindIs "string" . }}
+    {{- . | nindent 4 }}
+{{- else }}
+    #####        Security settings       #####
+    ##########################################
+    # Enable passphrase protection of the Master signing_key. This only applies if
+    # master_sign_pubkey is set to True.  This is disabled by default.
+    master_sign_pubkey: False
+    master_sign_key_name: master_sign
+    master_pubkey_signature: master_pubkey_signature
+    master_use_pubkey_signature: False
+{{- end }}
+{{- end }}
+
+{{- with .Values.saltMaster.conf.api }}
+  api.conf: |
+{{- if kindIs "string" . }}
+    {{- . | nindent 4 }}
+{{- else }}
+{{- end }}
+{{- end }}
+
+{{- with .Values.saltMaster.conf.user }}
+  user.conf: |
+{{- if kindIs "string" . }}
+    {{- . | nindent 4 }}
+{{- else }}
+{{- end }}
+{{- end }}

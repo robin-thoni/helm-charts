@@ -1,0 +1,37 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "saltstack-server.fullname" . }}-master
+  labels:
+    {{- include "saltstack-server.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.services.master.type }}
+  ports:
+    - port: {{ .Values.services.master.ports.publish.servicePort }}
+      targetPort: publish
+      protocol: TCP
+      name: publish
+    - port: {{ .Values.services.master.ports.return.servicePort }}
+      targetPort: return
+      protocol: TCP
+      name: return
+  selector:
+    {{- include "saltstack-server.selectorLabels" . | nindent 4 }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "saltstack-server.fullname" . }}
+  labels:
+    {{- include "saltstack-server.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.services.rest.type }}
+  ports:
+    - port: {{ .Values.services.rest.ports.http.servicePort }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "saltstack-server.selectorLabels" . | nindent 4 }}
