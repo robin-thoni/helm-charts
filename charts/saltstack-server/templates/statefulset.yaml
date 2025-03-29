@@ -49,9 +49,13 @@ spec:
               set -x
               set -e
 
-              if [ -e /git/.cache/git/credential/socket ]
+              if [ -e /git/.cache/git/credential/ ]
               then
                 chmod 700 /git/.cache/git/credential/
+              fi
+
+              if [ -e /git/.cache/git/credential/socket ]
+              then
                 chmod 600 /git/.cache/git/credential/socket
               fi
 
