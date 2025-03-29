@@ -59,7 +59,7 @@ spec:
                 chmod 600 /git/.cache/git/credential/socket
               fi
 
-              git-sync --http-bind=0.0.0.0:8080
+              exec git-sync --http-bind=0.0.0.0:8080
           restartPolicy: Always
           startupProbe:
             httpGet:
@@ -99,7 +99,21 @@ spec:
           command:
             - /bin/sh
             - -c
-            - salt-master
+            - |
+              set -x
+              set -e
+
+              for d in \
+                minions \
+                minions_autosign \
+                minions_denied \
+                minions_pre \
+                minions_rejected
+              do
+                mkdir -p "/etc/salt/pki/${d}"
+              done
+
+              exec salt-master
           ports:
             - name: publish
               containerPort: {{ .Values.services.master.ports.publish.containerPort }}
