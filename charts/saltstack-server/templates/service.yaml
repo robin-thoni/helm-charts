@@ -16,6 +16,9 @@ spec:
       targetPort: return
       protocol: TCP
       name: return
+  # Required so minions are not NAT'ed, and salt can match their TCP inbound IP w/ their grains
+  externalTrafficPolicy: Local
+  internalTrafficPolicy: Local
   selector:
     {{- include "saltstack-server.selectorLabels" . | nindent 4 }}
 

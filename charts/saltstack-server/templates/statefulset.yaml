@@ -150,6 +150,9 @@ spec:
               mountPath: /var/cache/salt/master
               subPath: var/cache/salt/master
             - name: tmp
+              mountPath: /var/cache/salt/cloud
+              subPath: var/cache/salt/cloud
+            - name: tmp
               mountPath: /var/run/salt/master
               subPath: var/run/salt/master
           {{- with .Values.saltMaster.volumeMounts }}
