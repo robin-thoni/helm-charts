@@ -31,11 +31,9 @@ podAnnotations: {}
 podLabels: {}
 
 podSecurityContext:
-  # runAsUser: 100
-  # runAsGroup: 450
   supplementalGroups:
-    - 450
-  fsGroup: 450
+    - 999
+  fsGroup: 999
 
 # This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
 services:
@@ -146,7 +144,7 @@ saltMaster:
       - ALL
     readOnlyRootFilesystem: true
     runAsNonRoot: true
-    runAsUser: 100
+    runAsUser: 999
 
   startupProbe:
     tcpSocket:
