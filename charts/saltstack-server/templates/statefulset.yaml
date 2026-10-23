@@ -155,6 +155,9 @@ spec:
             - name: tmp
               mountPath: /var/run/salt/master
               subPath: var/run/salt/master
+            - name: tmp
+              mountPath: /opt/saltstack/salt/.local
+              subPath: opt/saltstack/salt/.local
           {{- with .Values.saltMaster.volumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
