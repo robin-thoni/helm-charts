@@ -14,6 +14,16 @@ entries:
   saltstack-server:
   - apiVersion: v2
     appVersion: "3008.3"
+    created: "2026-10-23T14:31:08.994542439Z"
+    description: A Helm chart for Saltstack server
+    digest: 367560c0914ab3926ee91a9539a4a59e436fbbe55c564030aa339513130f0063
+    name: saltstack-server
+    type: application
+    urls:
+    - https://github.com/robin-thoni/helm-charts/releases/download/saltstack-server-0.0.8/saltstack-server-0.0.8.tgz
+    version: 0.0.8
+  - apiVersion: v2
+    appVersion: "3008.3"
     created: "2026-10-23T13:29:15.351482296Z"
     description: A Helm chart for Saltstack server
     digest: 33c7292dbc3475de9728ebe44dc559e76d2c9f6e4a71f824f452601e196b568b
@@ -82,4 +92,4 @@ entries:
     urls:
     - https://github.com/robin-thoni/helm-charts/releases/download/saltstack-server-0.0.1/saltstack-server-0.0.1.tgz
     version: 0.0.1
-generated: "2026-10-23T13:29:15.351499622Z"
+generated: "2026-10-23T14:31:08.994565914Z"
