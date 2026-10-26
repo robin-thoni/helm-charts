@@ -1,0 +1,33 @@
+{{- if .Values.advancedConfig.createConfigMap }}
+{{- if .Values.advancedConfig.configMap }}
+{{- fail "Set either advancedConfig.configMap or advancedConfig.createConfigMap, not both" }}
+{{- end }}
+{{- if not .Values.advancedConfig.data }}
+{{- fail "advancedConfig.data must contain at least one PHP config file when advancedConfig.createConfigMap is true" }}
+{{- end }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "roundcube.advancedConfigMapName" . }}
+  labels:
+    {{- include "roundcube.labels" . | nindent 4 }}
+data:
+  {{- toYaml .Values.advancedConfig.data | nindent 2 }}
+{{- end }}
+{{ if .Values.advancedConfig.phpIni.createConfigMap }}
+{{- if .Values.advancedConfig.phpIni.configMap }}
+{{- fail "Set either advancedConfig.phpIni.configMap or advancedConfig.phpIni.createConfigMap, not both" }}
+{{- end }}
+{{- if or (empty .Values.advancedConfig.phpIni.key) (empty .Values.advancedConfig.phpIni.content) }}
+{{- fail "advancedConfig.phpIni.key and advancedConfig.phpIni.content are required when advancedConfig.phpIni.createConfigMap is true" }}
+{{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "roundcube.phpIniConfigMapName" . }}
+  labels:
+    {{- include "roundcube.labels" . | nindent 4 }}
+data:
+  {{ .Values.advancedConfig.phpIni.key | quote }}: {{ .Values.advancedConfig.phpIni.content | quote }}
+{{- end }}

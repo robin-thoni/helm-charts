@@ -83,13 +83,41 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .Values.volumeMounts }}
+          {{- if or .Values.volumeMounts .Values.advancedConfig.configMap .Values.advancedConfig.createConfigMap .Values.advancedConfig.phpIni.configMap .Values.advancedConfig.phpIni.createConfigMap }}
           volumeMounts:
+            {{- if or .Values.advancedConfig.configMap .Values.advancedConfig.createConfigMap }}
+            - name: roundcube-extra-config
+              mountPath: /var/roundcube/config
+              readOnly: true
+            {{- end }}
+            {{- if or .Values.advancedConfig.phpIni.configMap .Values.advancedConfig.phpIni.createConfigMap }}
+            - name: roundcube-php-ini
+              mountPath: {{ printf "/usr/local/etc/php/conf.d/%s" .Values.advancedConfig.phpIni.filename | quote }}
+              subPath: {{ .Values.advancedConfig.phpIni.filename | quote }}
+              readOnly: true
+            {{- end }}
+            {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
+            {{- end }}
           {{- end }}
-      {{- with .Values.volumes }}
+      {{- if or .Values.volumes .Values.advancedConfig.configMap .Values.advancedConfig.createConfigMap .Values.advancedConfig.phpIni.configMap .Values.advancedConfig.phpIni.createConfigMap }}
       volumes:
+        {{- if or .Values.advancedConfig.configMap .Values.advancedConfig.createConfigMap }}
+        - name: roundcube-extra-config
+          configMap:
+            name: {{ if .Values.advancedConfig.createConfigMap }}{{ include "roundcube.advancedConfigMapName" . | quote }}{{ else }}{{ .Values.advancedConfig.configMap | quote }}{{ end }}
+        {{- end }}
+        {{- if or .Values.advancedConfig.phpIni.configMap .Values.advancedConfig.phpIni.createConfigMap }}
+        - name: roundcube-php-ini
+          configMap:
+            name: {{ if .Values.advancedConfig.phpIni.createConfigMap }}{{ include "roundcube.phpIniConfigMapName" . | quote }}{{ else }}{{ .Values.advancedConfig.phpIni.configMap | quote }}{{ end }}
+            items:
+              - key: {{ required "advancedConfig.phpIni.key is required when advancedConfig.phpIni.configMap is set" .Values.advancedConfig.phpIni.key | quote }}
+                path: {{ .Values.advancedConfig.phpIni.filename | quote }}
+        {{- end }}
+        {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
+        {{- end }}
       {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:

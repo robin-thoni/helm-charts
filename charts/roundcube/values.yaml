@@ -46,6 +46,33 @@ secrets:
   #   ROUNDCUBEMAIL_DB_PASSWORD: db-password
   #   ROUNDCUBEMAIL_OAUTH_CLIENT_SECRET: oauth-client-secret
 
+# Mount existing ConfigMaps for Roundcube's additional PHP config files and
+# custom PHP settings. ConfigMap content is managed separately from this chart.
+advancedConfig:
+  # ConfigMap containing one or more *.php files, mounted at
+  # /var/roundcube/config where Roundcube merges them with its default config.
+  # Set create to true and put each file's contents in data to manage it here.
+  configMap: ""
+  createConfigMap: false
+  configMapName: ""
+  data: {}
+  # Example:
+  # createConfigMap: true
+  # data:
+  #   custom.inc.php: |
+  #     <?php
+  #     $config['support_url'] = 'https://example.org/support';
+  # Optionally mount a PHP .ini file from a ConfigMap. The selected key is
+  # mounted as the configured filename in PHP's conf.d directory. Set createConfigMap
+  # to true to manage this ConfigMap here and provide its content in content.
+  phpIni:
+    configMap: ""
+    createConfigMap: false
+    configMapName: ""
+    key: ""
+    filename: zzz_roundcube-custom.ini
+    content: ""
+
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
 # This is to override the chart name.

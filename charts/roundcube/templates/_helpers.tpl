@@ -60,3 +60,12 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/* Names for chart-managed advanced configuration ConfigMaps. */}}
+{{- define "roundcube.advancedConfigMapName" -}}
+{{- default (printf "%s-config" (include "roundcube.fullname" .)) .Values.advancedConfig.configMapName | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{- define "roundcube.phpIniConfigMapName" -}}
+{{- default (printf "%s-php-ini" (include "roundcube.fullname" .)) .Values.advancedConfig.phpIni.configMapName | trunc 63 | trimSuffix "-" }}
+{{- end }}
