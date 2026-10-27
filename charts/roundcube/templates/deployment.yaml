@@ -41,10 +41,13 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default (print .Chart.AppVersion "-apache") }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           {{- if hasKey .Values.environment "ROUNDCUBEMAIL_DB_PASSWORD" }}
-          {{- fail "Set ROUNDCUBEMAIL_DB_PASSWORD through secrets.keys, not environment" }}
+          {{- fail "Set ROUNDCUBEMAIL_DB_PASSWORD through secrets.env, not environment" }}
           {{- end }}
           {{- if hasKey .Values.environment "ROUNDCUBEMAIL_OAUTH_CLIENT_SECRET" }}
-          {{- fail "Set ROUNDCUBEMAIL_OAUTH_CLIENT_SECRET through secrets.keys, not environment" }}
+          {{- fail "Set ROUNDCUBEMAIL_OAUTH_CLIENT_SECRET through secrets.env, not environment" }}
+          {{- end }}
+          {{- if hasKey .Values.environment "ROUNDCUBEMAIL_DES_KEY" }}
+          {{- fail "Set ROUNDCUBEMAIL_DES_KEY through secrets.env, not environment" }}
           {{- end }}
           {{- $environment := dict }}
           {{- range $name, $value := .Values.environment }}
@@ -52,19 +55,19 @@ spec:
           {{- $_ := set $environment $name $value }}
           {{- end }}
           {{- end }}
-          {{- if or $environment .Values.secrets.keys }}
+          {{- if or $environment .Values.secrets.env }}
           env:
             {{- range $name, $value := $environment }}
             - name: {{ $name | quote }}
               value: {{ $value | quote }}
             {{- end }}
-            {{- range $name, $key := .Values.secrets.keys }}
-            - name: {{ $name | quote }}
+            {{- range .Values.secrets.env }}
+            - name: {{ required "Each secrets.env entry needs a name" .name | quote }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ required "secrets.existingSecret is required when secrets.keys are configured" $.Values.secrets.existingSecret | quote }}
-                  key: {{ $key | quote }}
-                  optional: {{ $.Values.secrets.optional }}
+                  name: {{ required "Each secrets.env entry needs a secretName" .secretName | quote }}
+                  key: {{ required "Each secrets.env entry needs a key" .key | quote }}
+                  optional: {{ .optional | default false }}
             {{- end }}
           {{- end }}
           ports:

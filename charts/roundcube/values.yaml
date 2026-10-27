@@ -14,8 +14,8 @@ image:
   tag: ""
 
 # Environment variables supported by the official Roundcube image.
-# Leave a value empty to use the image default. Credentials are configured
-# through secrets.existingSecret and secrets.keys below.
+# Leave a value empty to use the image default. Sensitive values should be
+# configured through secrets.env below.
 environment:
   ROUNDCUBEMAIL_DEFAULT_HOST: ""
   ROUNDCUBEMAIL_DEFAULT_PORT: ""
@@ -35,16 +35,18 @@ environment:
   ROUNDCUBEMAIL_DB_USER: ""
   ROUNDCUBEMAIL_DB_NAME: ""
 
-# Map environment variable names to keys in a pre-created Kubernetes Secret.
+# Configure secret-backed environment variables. Each entry can reference a
+# different Kubernetes Secret, so application and database credentials can be
+# managed independently.
 secrets:
-  existingSecret: ""
-  optional: false
-  keys: {}
+  env: []
   # Example:
-  # existingSecret: roundcube-credentials
-  # keys:
-  #   ROUNDCUBEMAIL_DB_PASSWORD: db-password
-  #   ROUNDCUBEMAIL_OAUTH_CLIENT_SECRET: oauth-client-secret
+  # - name: ROUNDCUBEMAIL_DB_PASSWORD
+  #   secretName: database-app
+  #   key: password
+  # - name: ROUNDCUBEMAIL_DES_KEY
+  #   secretName: roundcube-app
+  #   key: des-key
 
 # Mount existing ConfigMaps for Roundcube's additional PHP config files and
 # custom PHP settings. ConfigMap content is managed separately from this chart.
