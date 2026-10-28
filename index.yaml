@@ -11,6 +11,17 @@ entries:
     urls:
     - https://github.com/robin-thoni/helm-charts/releases/download/dummy-0.1.4/dummy-0.1.4.tgz
     version: 0.1.4
+  roundcube:
+  - apiVersion: v2
+    appVersion: 1.7.5
+    created: "2026-10-28T13:37:46.954885013Z"
+    description: A Helm chart for Kubernetes
+    digest: c72872b51be8c69db56d3204eaec7b6c236a627622c58c2ea242b741944d9d36
+    name: roundcube
+    type: application
+    urls:
+    - https://github.com/robin-thoni/helm-charts/releases/download/roundcube-0.1.0/roundcube-0.1.0.tgz
+    version: 0.1.0
   saltstack-server:
   - apiVersion: v2
     appVersion: "3008.3"
@@ -92,4 +103,4 @@ entries:
     urls:
     - https://github.com/robin-thoni/helm-charts/releases/download/saltstack-server-0.0.1/saltstack-server-0.0.1.tgz
     version: 0.0.1
-generated: "2026-10-23T14:31:08.994565914Z"
+generated: "2026-10-28T13:37:46.954897711Z"
